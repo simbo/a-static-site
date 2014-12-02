@@ -1,0 +1,100 @@
+/**
+ * + Media Query shorthands
+ * =====================================================================
+ */
+
+// retina displays
+mq-retina()
+    @media only screen and ( -webkit-min-device-pixel-ratio: 2      ),
+           only screen and (    min--moz-device-pixel-ratio: 2      ),
+           only screen and (      -o-min-device-pixel-ratio: 2/1    ),
+           only screen and (         min-device-pixel-ratio: 2      ),
+           only screen and (                 min-resolution: 192dpi ),
+           only screen and (                 min-resolution: 2dppx  )
+        block
+
+// custom min-width
+mq-min( minWidth )
+    @media ( min-width: minWidth )
+        block
+
+// custom max- and min-width
+mq-min-max( minWidth, maxWidth )
+    @media ( min-width: minWidth ) and ( max-width: maxWidth )
+        block
+
+// custom max-width
+mq-max( maxWidth )
+    @media ( max-width: maxWidth )
+        block
+
+// xs only
+mq-xs()
+    +mq-max( mqbp.xs.max )
+        block
+
+// sm and larger
+mq-sm-min()
+    +mq-min( mqbp.sm.min )
+        block
+
+// sm only
+mq-sm()
+    +mq-min-max( mqbp.sm.min, mqbp.sm.max )
+        block
+
+// sm and smaller
+mq-sm-max()
+    +mq-max( mqbp.sm.max )
+        block
+
+// md and larger
+mq-md-min()
+    +mq-min( mqbp.md.min )
+        block
+
+// md only
+mq-md()
+    +mq-min-max( mqbp.md.min, mqbp.md.max )
+        block
+
+// md and smaller
+mq-md-max()
+    +mq-max( mqbp.md.max )
+        block
+
+// lg and larger
+mq-lg()
+    +mq-min( mqbp.lg.min )
+        block
+
+// for using loops through (xs,sm,md,lg,xl)
+// mq-var( mq-id )
+//     if (mq-id == xs)
+//         +mq-xs()
+//             block
+//     elseif (mq-id == sm)
+//         +mq-sm()
+//             block
+//     elseif (mq-id == md)
+//         +mq-md()
+//             block
+//     elseif (mq-id == lg)
+//         +mq-lg()
+//             block
+//     elseif (mq-id == xl)
+//         +mq-xl()
+//             block
+//     elseif (type-of(mq-id) == list)
+//         mq-min = nth(mq-id,1)
+//         mq-max = nth(mq-id,2)
+//         if (mq-min == 0)
+//             +mq-max(mq-max)
+//                 block
+//         elseif (mq-max == 0)
+//             +mq-min(mq-min)
+//                 block
+//         else
+//             +mq-min-max(mq-min, mq-max)
+//                 block
+/* = Media Query shorthands */

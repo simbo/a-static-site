@@ -1,0 +1,73 @@
+/**
+ * + Basics
+ * =====================================================================
+ */
+
+html
+    box-sizing border-box
+
+body
+    @extends $text-normal
+    color #000
+    background #fff
+
+*,
+h1, figure, fieldset // overwrite normalize.css
+    -webkit-font-smoothing antialiased
+    margin 0
+    padding 0
+
+*,
+*::before,
+*::after
+    box-sizing inherit
+
+a
+    color: color.link.normal
+    text-decoration none
+
+    &:hover
+        color: color.link.active
+
+/* = Basics */
+
+
+/**
+ * + Code
+ * =====================================================================
+ */
+
+// all code
+pre, code, var, samp
+    @extends $text-code
+    hyphens none
+    font-style normal
+    background #f8f8f8
+    color #000
+
+// code blocks
+pre
+    display block
+    word-break keep-all
+    word-wrap normal
+    white-space pre
+    overflow auto
+    -webkit-overflow-scrolling touch
+
+// inline code
+code, var, samp
+    padding .2em .2em
+    word-break break-all
+    word-wrap break-word
+    white-space normal
+
+    pre &
+        padding 0
+        word-break inherit
+        word-wrap inherit
+        white-space inherit
+
+kbd
+    keyboard-key()
+
+/* = Code */

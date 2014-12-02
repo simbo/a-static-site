@@ -1,0 +1,148 @@
+/**
+ * + Colors
+ * =====================================================================
+ */
+
+color             = {}
+color.foreground  = #123
+color.background  = #fff
+color.highlight   = #f6a
+color.link        = {}
+color.link.normal = #23d
+color.link.active = darken( color.link.normal, 30% )
+
+/* = Colors */
+
+
+/**
+ * + Typo
+ * =====================================================================
+ */
+
+font-family = {
+    primary:   '"Open Sans", sans-serif',
+    monospace: '"Source Code Pro", monospace'
+}
+
+font-size = {
+    normal: 16px,
+    small:  12px, // ~ normal * 0.75
+    large:  24px // ~ normal * 1.5
+}
+
+line-height = {
+    normal: 1.42857, // ~ 20/14
+    small:  1.21428, // ~ 20/14 * 0.85
+    large:  1.78571 // ~ 20/14 * 1.25
+}
+
+spacing = {
+    normal: font-size.normal
+    small:  font-size.normal * 0.5
+    large:  font-size.normal * 2
+}
+
+/* = Typo */
+
+
+/**
+ * + Spacings, Sizes, Relations
+ * =====================================================================
+ */
+
+phi                         = 1.618033989
+
+border-radius = {
+    small:  2px,
+    medium: 4px,
+    large:  6px
+}
+
+/* = Spacings, Sizes, Relations */
+
+
+/**
+ * + Media queries breakpoints
+ * =====================================================================
+ */
+
+mqbp = {
+    xs: {
+        min: 480px // extra small screen / phone
+    },
+    sm: {
+        min: 768px // small screen / tablet
+    },
+    md: {
+        min: 992px // medium screen / desktop
+    },
+    lg: {
+        min: 1200px // large screen / wide desktop
+    }
+}
+
+// So media queries don't overlap when required, provide a minimum and maximum
+mqbp.xs.max = ( mqbp.sm.min - 1 )
+mqbp.sm.max = ( mqbp.md.min - 1 )
+mqbp.md.max = ( mqbp.lg.min - 1 )
+
+/* = Media queries breakpoints */
+
+
+/**
+ * + Grid System
+ * =====================================================================
+ */
+
+grid = {
+
+    // grid basics
+    columns:      12, // number of columns in the grid
+    gutter-width: 30px, // gutter between columns
+
+    container: {
+        // horizontal container margins for fixed-width layouts
+        margin: {
+            sm: 20px,
+            md: 25px,
+            lg: 30px,
+            xl: 30px
+        }
+    },
+
+    // media query breakpoint identifiers and respective min-width
+    mqbp: {
+        sm: mqbp.sm.min,
+        md: mqbp.md.min,
+        lg: mqbp.lg.min
+    },
+
+    // column types and corresponding property type to change
+    types-properties: {
+        pull:   left,
+        push:   right,
+        offset: margin-left
+    }
+
+}
+
+// vertical padding for columns, rows and containers
+grid.padding = ( grid.gutter-width / 2 )
+
+// container widths for fixed-width layouts
+grid.container.sm = ( floor( ( mqbp.sm.min - grid.container.margin.sm * 2 ) / 10 ) * 10 + grid.gutter-width ) // 750px
+grid.container.md = ( floor( ( mqbp.md.min - grid.container.margin.md * 2 ) / 10 ) * 10 + grid.gutter-width ) // 970px
+grid.container.lg = ( floor( ( mqbp.lg.min - grid.container.margin.lg * 2 ) / 10 ) * 10 + grid.gutter-width ) // 1170px
+
+/* = Grid system */
+
+
+/**
+ * + Other
+ * =====================================================================
+ */
+
+// font-awesome fonts path
+fa-font-path = "../fonts/vendor/font-awesome"
+
+/* = Other */
