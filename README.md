@@ -1,7 +1,7 @@
 A Static Site
 =============
 
-# Setup
+## Setup
 
 ``` bash
 npm install -g gulp bower
@@ -9,19 +9,19 @@ npm install
 bower install
 ```
 
-# Build
+## Build
 
 ``` bash
 npm run build
 ```
 
-# Development
+## Development
 
 ``` bash
 npm run dev
 ```
 
-# Notes
+## Notes
 
 - https://github.com/lsjroberts/gelatin-design/
 - https://github.com/RobinThrift/metalsmith-tutorial
