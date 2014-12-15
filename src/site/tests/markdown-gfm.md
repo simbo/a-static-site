@@ -1,6 +1,5 @@
 ---
 title: GFM Markdown Tests
-template: page.html
 ---
 
 https://help.github.com/articles/github-flavored-markdown/
@@ -16,10 +15,6 @@ https://help.github.com/articles/github-flavored-markdown/
 
   - http://example.com
   - https://example.com
-  - ftp://example.com
-  - ssh://user:password@example.com
-  - mailto:user@example.com
-  - user@example.com
 
 ### Strikethrough
 

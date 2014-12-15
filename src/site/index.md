@@ -1,4 +1,4 @@
 ---
-title: Index
-template: page.html
 ---
+
+Hallo Welt.

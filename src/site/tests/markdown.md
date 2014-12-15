@@ -1,6 +1,5 @@
 ---
 title: Markdown Tests
-template: page.html
 ---
 
 ### Multiple underscores in words

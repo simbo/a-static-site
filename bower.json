@@ -1,0 +1,18 @@
+{
+  "name": "a-static-site",
+  "version": "0.1.0",
+  "description": "A generated static site using gulp and metalsmith.",
+  "author": "Simon Lepel <hallo@simonlepel.de>",
+  "keywords": [],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "node_modules",
+    "bower_components"
+  ],
+  "devDependencies": {
+    "jquery": "~2.1.1",
+    "highlightjs": "~8.4.0",
+    "normalize.css": "~3.0.2"
+  }
+}

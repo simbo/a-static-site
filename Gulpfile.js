@@ -4,114 +4,284 @@
  * https://github.com/gulpjs/gulp/tree/master/docs/recipes
  * =====================================================================
  */
+'use strict';
 
-// required modules
-var config         = require(process.cwd() + '/Config.js'),
-    metadata       = require(process.cwd() + '/Metadata.js'),
-    path           = require('path'),
-    util           = require('util'),
-    del            = require('del'),
-    Metalsmith     = require('metalsmith'),
-    branch         = require('metalsmith-branch'),
-    ignore         = require('metalsmith-ignore'),
-    drafts         = require('metalsmith-drafts'),
-    templates      = require('metalsmith-templates'),
-    markdown       = require('metalsmith-markdown'),
-    dateInFilename = require('metalsmith-date-in-filename');
-    permalinks     = require('metalsmith-permalinks'),
-    collections    = require('metalsmith-collections'),
-    _              = require('lodash'),
-    gulp           = require('gulp'),
-    stylus         = require('gulp-stylus'),
-    sourcemaps     = require('gulp-sourcemaps');
+// node modules
+var _                = require('lodash'),
+    path             = require('path'),
+    util             = require('util'),
+    del              = require('del'),
+    minimist         = require('minimist'),
+    moment           = require('moment'),
+    jade             = require('jade'),
+    autoprefixer     = require('autoprefixer-core'),
+    mqpacker         = require('css-mqpacker'),
+    csswring         = require('csswring'),
+    uglify           = require('uglify-js'),
+    highlightjs      = require('highlight.js'),
+    runSequence      = require('run-sequence'),
+    gulp             = require('gulp'),
+    Metalsmith       = require('metalsmith');
+
+
+// external data
+var config           = require(process.cwd() + '/Config.js'),
+    metadata         = require(process.cwd() + '/Metadata.js'),
+    pkg              = require(process.cwd() + '/package.json');
+
+
+/**
+ * + Auto-require plugin packages
+ * =====================================================================
+ */
+
+function autoloadPlugins(pluginExpr) {
+    var plugins = {};
+    _.forEach(pkg.devDependencies, function(version, pkgName) {
+        if( pkgName.match(pluginExpr) ) {
+            plugins[pkgName.replace(pluginExpr, '').replace(/-(\w)/g, function(match, p1) {
+                return p1.toUpperCase();
+            })] = require(pkgName);
+        }
+    });
+    return plugins;
+}
+
+var g  = autoloadPlugins(/^gulp-/), // gulp plugins
+    ms = autoloadPlugins(/^metalsmith-/); // metalsmith plugins
+
+/* = Auto-require plugin packages */
+
+
+/**
+ * + Params
+ * =====================================================================
+ */
+
+var params = (function(p){
+        var cliParams = minimist(process.argv.slice(2));
+        p.environment = process.env.NODE_ENV || cliParams.environment || cliParams.env || config.gulpParams.environment || 'production';
+        return p;
+    })({});
+
+/* = Params */
 
 
 /**
  * + Stylus / CSS processing
  * =====================================================================
  */
-gulp.task('build-css', function() {
-    gulp.src(config.paths.srcAssetsDev + '/stylus/main.styl')
-        .pipe(stylus({
+
+gulp.task('build:css', function() {
+    return gulp
+        .src(config.paths.assetsDev + '/stylus/*.styl')
+        .pipe(g.stylus({
             paths: [
-                config.paths.srcAssetsDev + '/stylus/imports'
+                path.join(config.paths.assetsDev, 'stylus/imports'),
+                path.join(config.paths.assetsDev, 'vendor')
             ],
             sourcemap: {
                 inline: true,
                 sourceRoot: '.',
-                basePath: 'assets/css'
+                basePath: path.join(path.relative(config.paths.out, config.paths.assetsOut), 'css')
             }
         }))
-        .pipe(sourcemaps.init({
+        .pipe(g.sourcemaps.init({
             loadMaps: true
         }))
-        .pipe(sourcemaps.write('.', {
+        .pipe(g.postcss((function(postcssPlugins){
+                if (params.environment === 'production') {
+                    postcssPlugins.push(csswring(config.csswring));
+                }
+                return postcssPlugins;
+            })([
+                autoprefixer(config.autoprefixer),
+                mqpacker
+            ])
+        ))
+        .pipe(g.if(
+            params.environment === 'development',
+            g.csslint(config.csslint)
+        ))
+        .pipe(g.csslint.reporter())
+        .pipe(g.sourcemaps.write('.', {
             includeContent: true,
             sourceRoot: '.'
         }))
-        .pipe(gulp.dest(config.paths.webAssets + '/css'));
+        .pipe(gulp.dest(path.join(config.paths.assetsOut, 'css')))
+        .pipe(g.connect.reload());
 });
+
 /* = Stylus / CSS processing */
+
+
+/**
+ * + Coffeescript / Javascript processing
+ * =====================================================================
+ */
+
+gulp.task('build:js', function() {
+    return gulp
+        .src(config.paths.assetsDev + '/coffee/*.coffee')
+        .pipe(g.sourcemaps.init())
+        .pipe(g.if(
+            params.environment === 'development',
+            g.coffeelint(config.coffeelint)
+        ))
+        .pipe(g.coffeelint.reporter())
+        .pipe(g.coffee({
+            bare: true
+        }))
+        .pipe(g.if(
+            params.environment === 'production',
+            g.uglify()
+        ))
+        .pipe(g.sourcemaps.write('.', {
+            includeContent: true,
+            sourceRoot: '.'
+        }))
+        .pipe(gulp.dest(path.join(config.paths.assetsOut, 'js')))
+        .pipe(g.connect.reload());
+});
+
+/* = Coffeescript / Javascript processing */
+
+
+/**
+ * + Custom jade filters
+ * =====================================================================
+ */
+
+// uglify inline scripts
+jade.filters.uglify = function(data, options) {
+    return params.environment === 'development' ? data : uglify.minify(data, {fromString: true}).code;
+}
+
+/* = Custom jade filters */
 
 
 /**
  * + Metalsmith rendering
  * =====================================================================
  */
-gulp.task('render', function() {
-    var metalsmith = new Metalsmith(config.paths.root);
-    // set metalsmith options
-    metalsmith.source(config.paths.site)
-        .destination(config.paths.web)
+gulp.task('build:site', function(done) {
+
+    // parse metadata depending on environment
+    _.forEach(metadata.environments, function(values, env) {
+        if (params.environment===env) {
+            metadata = _.merge(metadata, values);
+        }
+    });
+
+    // localize moment
+    moment.locale(metadata.dateLocale);
+
+    // jade options
+    var jadeLocals = {
+            moment: moment,
+            environment: params.environment
+        },
+        jadeOptions = {
+            pretty: params.environment=='development' ? true : false,
+            directory: path.relative(config.paths.root, config.paths.templates),
+        };
+
+    // set default template to a metalsmith stream
+    function defaultTemplate(template) {
+        return ms.each(function(file, filename) {
+            if (!file.template && file.template!==null) {
+                file.template = template;
+            }
+        });
+    }
+
+    // go metalsmith!
+    var metalsmith = new Metalsmith(config.paths.root)
+
+        // set basic options
+        .source(config.paths.site)
+        .destination(config.paths.out)
         .metadata(metadata)
         .clean(false)
-        .use(drafts())
-        // create collections
-        .use(collections({
+
+        // enable drafts
+        .use(ms.drafts())
+
+        // define collections
+        .use(ms.collections({
             posts: {
                 pattern: 'blog/**/*',
                 sortBy: 'date',
                 reverse: true
             }
         }))
-        // parse all markdown
-        .use(branch('**/*.md')
-            .use(markdown())
+
+        // render markdown
+        .use(ms.branch([
+                '**/*.md'
+            ])
+            .use(ms.markdown(_.merge(config.marked, {
+                highlight: function (code) {
+                    return highlightjs.highlightAuto(code).value;
+                }
+            })))
         )
+
+        // render jade files
+        .use(ms.branch([
+                '**/*.jade'
+            ])
+            .use(ms.jade(_.merge({
+                locals: _.merge(metadata, jadeLocals)
+            }, jadeOptions)))
+        )
+
         // parse content
-        .use(branch([
-                '**/*',
+        .use(ms.branch([
+                '**/*.html',
                 '!blog/**/*'
             ])
-            .use(permalinks({
+            .use(defaultTemplate('page.jade'))
+            .use(ms.permalinks({
                 relative: false
             }))
         )
+
         // parse blog
-        .use(branch('blog/**/*')
-            .use(dateInFilename())
-            .use(function(files, metalsmith, done) {
-                _.forEach(files, function(fileMeta, fileName){
-                    fileMeta.template = 'post.html';// util.debug(util.inspect(fileMeta));
-                });
-                done();
-            })
-            .use(permalinks({
+        .use(ms.branch([
+                'blog/**/*.html'
+            ])
+            .use(ms.dateInFilename())
+            .use(defaultTemplate('post.jade'))
+            .use(ms.permalinks({
                 pattern: 'blog/:date/:title',
                 date: 'YYYY/MM',
                 relative: false
             }))
         )
-        // use templates
-        .use(templates({
-            engine: 'swig',
-            directory: path.relative(config.paths.root, config.paths.templates)
-        }))
+
+        // set absolute urls
+        .use(ms.branch([
+                '**/*.html'
+            ])
+            .use(ms.each(function(file, filename) {
+                file.url = metadata.baseUrl + file.path;
+            }))
+        )
+
+        // render templates
+        .use(ms.templates(_.merge({
+            engine: 'jade'
+        }, jadeOptions, jadeLocals)))
+
         // put everything together...
         .build(function(err) {
             if (err) throw err;
+            done();
         });
+
 });
+
 /* = Metalsmith rendering */
 
 
@@ -119,10 +289,11 @@ gulp.task('render', function() {
  * + Watch Task
  * =====================================================================
  */
+
 gulp.task('watch', function() {
 
     // show watch info in console
-    logWatchInfo = function (event) {
+    function logWatchInfo(event) {
         var eventPath = path.relative(config.paths.root, event.path),
             eventMessage = 'File ' + eventPath + ' was ' + event.type + ', running tasks...';
         console.log(eventMessage);
@@ -132,51 +303,164 @@ gulp.task('watch', function() {
     gulp.watch([
         'site/**/*',
         'templates/**/*'
-    ], _.merge({cwd: config.paths.src}, config.watch), function(event) {
+    ], _.merge({
+        cwd: config.paths.src
+    }, config.watch), function(event) {
         logWatchInfo(event);
-        gulp.start('render');
+        runSequence(
+            'build:site',
+            'reload'
+        );
     });
 
     // watch stylus files in assets-dev
     gulp.watch([
         'stylus/**/*.styl'
-    ], _.merge({cwd: config.paths.srcAssetsDev}, config.watch), function(event) {
+    ], _.merge({
+        cwd: config.paths.assetsDev
+    }, config.watch), function(event) {
         logWatchInfo(event);
-        gulp.start('build-css');
+        gulp.start('build:css');
+    });
+
+    // watch coffeescript files in assets-dev
+    gulp.watch([
+        'coffee/**/*.coffee'
+    ], _.merge({
+        cwd: config.paths.assetsDev
+    }, config.watch), function(event) {
+        logWatchInfo(event);
+        gulp.start('build:js');
     });
 
 });
+
 /* = Watch Task */
 
 
 /**
- * + Clean Task
+ * + Serve task
  * =====================================================================
  */
-gulp.task('clean-web', function (cb) {
-    del(config.paths.web, cb);
+
+// webserver for development
+gulp.task('serve', function() {
+    g.connect.server({
+        root: config.paths.out,
+        host: 'localhost',
+        port: 8888,
+        livereload: true
+    });
 });
-/* = Clean Task */
+
+gulp.task('reload', function() {
+    gulp.src(config.paths.out)
+        .pipe(g.connect.reload());
+})
+
+/* = Serve task */
+
 
 /**
- * + Full build
+ * + Copy tasks
  * =====================================================================
  */
-gulp.task('build', ['clean-web'], function() {
-    gulp.start('render')
-        .start('build-css')
+
+// copy all dependencies
+gulp.task('copy:deps', ['clean:deps'], function(done) {
+    runSequence(
+        [
+            'copy:jquery',
+            'copy:normalize',
+            'copy:highlightjs'
+        ],
+        done
+    );
 });
-/* = Full build */
+
+// copy jquery local alternative
+gulp.task('copy:jquery', function() {
+    return gulp
+        .src([
+            '*'
+        ], {
+            cwd: path.join(config.paths.bower, 'jquery/dist')
+        })
+        .pipe(gulp.dest(path.join(config.paths.assets, 'vendor/jquery')));
+});
+
+// copy normalize.css as stylus
+gulp.task('copy:normalize', function() {
+    return gulp
+        .src([
+            'normalize.css'
+        ], {
+            cwd: path.join(config.paths.bower, 'normalize.css')
+        })
+        .pipe(g.extReplace('.styl'))
+        .pipe(gulp.dest(path.join(config.paths.assetsDev, 'vendor/normalize')));
+});
+
+// copy highlightjs theme as stylus
+gulp.task('copy:highlightjs', function() {
+    return gulp
+        .src([
+            'github.css'
+        ], {
+            cwd: path.join(config.paths.bower, 'highlightjs/styles')
+        })
+        .pipe(g.extReplace('.styl'))
+        .pipe(gulp.dest(path.join(config.paths.assetsDev, 'vendor/highlightjs')));
+});
+
+/* = Copy tasks */
 
 
 /**
- * + Default task
+ * + Clean Tasks
  * =====================================================================
  */
-gulp.task('default', function() {
-    gulp.start('build');
+
+gulp.task('clean:out', function(done) {
+    del(config.paths.out, done);
 });
-/* = Default task */
+
+gulp.task('clean:deps', function(done) {
+    del([
+        path.join(config.paths.assets, 'vendor'),
+        path.join(config.paths.assetsDev, 'vendor')
+    ], done);
+});
+
+/* = Clean Tasks */
+
+
+/**
+ * + Common tasks
+ * =====================================================================
+ */
+
+// default task
+gulp.task('default', ['build']);
+
+// full build
+gulp.task('build', ['copy:deps', 'clean:out'], function(done) {
+    runSequence(
+        [
+            'build:site',
+            'build:css',
+            'build:js'
+        ],
+        done
+    );
+});
+
+// build, serve and watch
+gulp.task('dev', ['build'], function() {
+    gulp.start('serve', 'watch');
+});
+
+/* = Common tasks */
 
 
 /* = Gulpfile */

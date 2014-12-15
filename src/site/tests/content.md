@@ -1,6 +1,5 @@
 ---
 title: Lorem ipsum dolor
-template: page.html
 date: 1982/11/02
 ---
 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
