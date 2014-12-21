@@ -31,9 +31,17 @@ var config   = require(process.cwd() + '/Config.js'),
 // auto-require plugin packages
 var autoPlug = require('auto-plug'),
     // gulp plugins
-    g        = autoPlug({ config: pkg }),
+    g   = autoPlug({
+            config: pkg
+        }),
     // metalsmith plugins
-    ms       = autoPlug({ prefix: 'metalsmith', config: pkg });
+    ms  = autoPlug({
+            prefix: 'metalsmith',
+            config: pkg,
+            rename: {
+                'metalsmith-better-excerpts': 'excerpts'
+            }
+        });
 
 
 /**
@@ -184,6 +192,7 @@ jade.filters.uglify = function(data, options) {
  * + Metalsmith rendering
  * =====================================================================
  */
+
 gulp.task('build:site', function(done) {
 
     // parse metadata depending on environment
@@ -255,6 +264,9 @@ gulp.task('build:site', function(done) {
                 locals: _.merge(metadata, jadeLocals)
             }, jadeOptions)))
         )
+
+        // generate excerpts
+        .use(ms.excerpts())
 
         // parse content
         .use(ms.branch([
