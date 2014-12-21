@@ -37,7 +37,7 @@ var autoPlug = require('auto-plug'),
 
 
 /**
- * + Params
+ * + Parse CLI params
  * =====================================================================
  */
 
@@ -47,7 +47,7 @@ var params = (function(p){
         return p;
     })({});
 
-/* = Params */
+/* = Parse CLI params */
 
 
 /**
@@ -57,22 +57,33 @@ var params = (function(p){
 
 gulp.task('build:css', function() {
     return gulp
+
+        // grab all stylus files in stylus root folder
         .src(config.paths.assetsDev + '/stylus/*.styl')
+
+        // pipe through stylus processor
         .pipe(g.stylus({
+            // add imports and vendor folders to @import path
             paths: [
                 path.join(config.paths.assetsDev, 'stylus/imports'),
                 path.join(config.paths.assetsDev, 'vendor')
             ],
+            // create sourcemaps containing inline sources
             sourcemap: {
                 inline: true,
                 sourceRoot: '.',
                 basePath: path.join(path.relative(config.paths.out, config.paths.assetsOut), 'css')
             }
         }))
+
+        // pipe through sourcemaps processor
         .pipe(g.sourcemaps.init({
             loadMaps: true
         }))
+
+        // pipe through postcss processor
         .pipe(g.postcss((function(postcssPlugins){
+                // minify only when in production mode
                 if (params.environment === 'production') {
                     postcssPlugins.push(csswring(config.csswring));
                 }
@@ -82,17 +93,26 @@ gulp.task('build:css', function() {
                 mqpacker
             ])
         ))
+
+        // pipe through csslint if in development mode
         .pipe(g.if(
             params.environment === 'development',
             g.csslint(config.csslint)
         ))
         .pipe(g.csslint.reporter())
+
+        // write sourcemaps
         .pipe(g.sourcemaps.write('.', {
             includeContent: true,
             sourceRoot: '.'
         }))
+
+        // write processed styles
         .pipe(gulp.dest(path.join(config.paths.assetsOut, 'css')))
+
+        // live-reload
         .pipe(g.connect.reload());
+
 });
 
 /* = Stylus / CSS processing */
@@ -105,26 +125,43 @@ gulp.task('build:css', function() {
 
 gulp.task('build:js', function() {
     return gulp
+
+        // grab all coffee files in coffeescript root folder
         .src(config.paths.assetsDev + '/coffee/*.coffee')
+
+        // pipe through sourcemaps processor
         .pipe(g.sourcemaps.init())
+
+        // pipe though coffeelint if in development mode
         .pipe(g.if(
             params.environment === 'development',
             g.coffeelint(config.coffeelint)
         ))
         .pipe(g.coffeelint.reporter())
+
+        // pipe though coffeescript processor
         .pipe(g.coffee({
             bare: true
         }))
+
+        // uglify if in production mode
         .pipe(g.if(
             params.environment === 'production',
             g.uglify()
         ))
+
+        // write sourcemaps containing inline sources
         .pipe(g.sourcemaps.write('.', {
             includeContent: true,
             sourceRoot: '.'
         }))
+
+        // write processed javascripts
         .pipe(gulp.dest(path.join(config.paths.assetsOut, 'js')))
+
+        // live-reload
         .pipe(g.connect.reload());
+
 });
 
 /* = Coffeescript / Javascript processing */
@@ -135,9 +172,9 @@ gulp.task('build:js', function() {
  * =====================================================================
  */
 
-// uglify inline scripts
+// uglify inline scripts if in production mode
 jade.filters.uglify = function(data, options) {
-    return params.environment === 'development' ? data : uglify.minify(data, {fromString: true}).code;
+    return params.environment === 'production' ? uglify.minify(data, {fromString: true}).code : data;
 }
 
 /* = Custom jade filters */
@@ -336,6 +373,7 @@ gulp.task('serve', function() {
     });
 });
 
+// trigger live-reload
 gulp.task('reload', function() {
     gulp.src(config.paths.out)
         .pipe(g.connect.reload());
@@ -404,10 +442,12 @@ gulp.task('copy:highlightjs', function() {
  * =====================================================================
  */
 
+// clean generated content
 gulp.task('clean:out', function(done) {
     del(config.paths.out, done);
 });
 
+// clean all dependencies
 gulp.task('clean:deps', function(done) {
     del([
         path.join(config.paths.assets, 'vendor'),

@@ -1,5 +1,5 @@
 /**
- * + Project Config
+ * + Project Build Config
  * =====================================================================
  */
 
@@ -77,4 +77,4 @@ module.exports = (function(config) {
     return config;
 })({});
 
-/* = Project Config */
+/* = Project Build Config */
