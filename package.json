@@ -12,6 +12,7 @@
     "dev": "gulp dev --environment development"
   },
   "devDependencies": {
+    "auto-plug": "^0.1.0",
     "autoprefixer-core": "^4.0.2",
     "css-mqpacker": "^2.0.0",
     "csswring": "^2.0.0",

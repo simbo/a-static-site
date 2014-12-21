@@ -7,50 +7,33 @@
 'use strict';
 
 // node modules
-var _                = require('lodash'),
-    path             = require('path'),
-    util             = require('util'),
-    del              = require('del'),
-    minimist         = require('minimist'),
-    moment           = require('moment'),
-    jade             = require('jade'),
-    autoprefixer     = require('autoprefixer-core'),
-    mqpacker         = require('css-mqpacker'),
-    csswring         = require('csswring'),
-    uglify           = require('uglify-js'),
-    highlightjs      = require('highlight.js'),
-    runSequence      = require('run-sequence'),
-    gulp             = require('gulp'),
-    Metalsmith       = require('metalsmith');
-
+var _            = require('lodash'),
+    path         = require('path'),
+    util         = require('util'),
+    del          = require('del'),
+    minimist     = require('minimist'),
+    moment       = require('moment'),
+    jade         = require('jade'),
+    autoprefixer = require('autoprefixer-core'),
+    mqpacker     = require('css-mqpacker'),
+    csswring     = require('csswring'),
+    uglify       = require('uglify-js'),
+    highlightjs  = require('highlight.js'),
+    runSequence  = require('run-sequence'),
+    gulp         = require('gulp'),
+    Metalsmith   = require('metalsmith');
 
 // external data
-var config           = require(process.cwd() + '/Config.js'),
-    metadata         = require(process.cwd() + '/Metadata.js'),
-    pkg              = require(process.cwd() + '/package.json');
+var config   = require(process.cwd() + '/Config.js'),
+    metadata = require(process.cwd() + '/Metadata.js'),
+    pkg      = require(process.cwd() + '/package.json');
 
-
-/**
- * + Auto-require plugin packages
- * =====================================================================
- */
-
-function autoloadPlugins(pluginExpr) {
-    var plugins = {};
-    _.forEach(pkg.devDependencies, function(version, pkgName) {
-        if( pkgName.match(pluginExpr) ) {
-            plugins[pkgName.replace(pluginExpr, '').replace(/-(\w)/g, function(match, p1) {
-                return p1.toUpperCase();
-            })] = require(pkgName);
-        }
-    });
-    return plugins;
-}
-
-var g  = autoloadPlugins(/^gulp-/), // gulp plugins
-    ms = autoloadPlugins(/^metalsmith-/); // metalsmith plugins
-
-/* = Auto-require plugin packages */
+// auto-require plugin packages
+var autoPlug = require('auto-plug'),
+    // gulp plugins
+    g        = autoPlug({ config: pkg }),
+    // metalsmith plugins
+    ms       = autoPlug({ prefix: 'metalsmith', config: pkg });
 
 
 /**
