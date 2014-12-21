@@ -1,27 +1,25 @@
 A Static Site
 =============
 
-## Setup
+  > This is test project using
+  > [Metalsmith](https://github.com/segmentio/metalsmith),
+  > [Gulp](https://github.com/gulpjs/gulp/)
+  > and a lot of
+  > [other packages](https://github.com/simbo/a-static-site/blob/master/package.json)
+  > to create a *static* website.
 
-``` bash
-npm install -g gulp bower
-npm install
-bower install
-```
+[![devDependencies Status](https://img.shields.io/david/dev/simbo/a-static-site.svg?style=flat-square)](https://david-dm.org/simbo/a-static-site#info=devDependencies)
 
-## Build
+## Commands
 
-``` bash
-npm run build
-```
+  - `npm install`  
+    setup everything
 
-## Development
+  - `npm run build`  
+    build in production mode
 
-``` bash
-npm run dev
-```
+  - `npm run build-dev`  
+    build in development mode
 
-## Notes
-
-- https://github.com/lsjroberts/gelatin-design/
-- https://github.com/RobinThrift/metalsmith-tutorial
+  - `npm run dev`  
+    build in dev mode, start local webserver, watch everything and rebuild on change
