@@ -43,7 +43,7 @@ var autoPlug = require('auto-plug'),
 
 var params = (function(p){
         var cliParams = minimist(process.argv.slice(2));
-        p.environment = process.env.NODE_ENV || cliParams.environment || cliParams.env || config.gulpParams.environment || 'production';
+        p.environment = cliParams.environment || cliParams.env || process.env.NODE_ENV || config.gulpParams.environment || 'production';
         return p;
     })({});
 
