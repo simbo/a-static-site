@@ -7,13 +7,15 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "build": "gulp build --environment production",
-    "build-dev": "gulp build --environment development",
-    "dev": "gulp dev --environment development"
+    "build": "./node_modules/.bin/gulp build --environment production",
+    "build-dev": "./node_modules/.bin/gulp build --environment development",
+    "dev": "./node_modules/.bin/gulp dev --environment development",
+    "postinstall": "./node_modules/.bin/bower install"
   },
   "devDependencies": {
     "auto-plug": "^0.1.0",
     "autoprefixer-core": "^4.0.2",
+    "bower": "^1.3.12",
     "css-mqpacker": "^2.0.0",
     "csswring": "^2.0.0",
     "del": "^1.1.0",
