@@ -4,7 +4,10 @@
   "description": "A generated static site using gulp and metalsmith.",
   "author": "Simon Lepel <simbo@simbo.de>",
   "keywords": [],
-  "license": "MIT",
+  "license": {
+    "type": "MIT",
+    "url": "http://simbo.mit-license.org/"
+  },
   "private": true,
   "ignore": [
     "node_modules",

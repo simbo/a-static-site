@@ -74,6 +74,20 @@ module.exports = (function(config) {
         'compatible-vendor-prefixes': false
     };
 
+    // config syync options
+    // https://github.com/danlevan/gulp-config-sync
+    config.configSync = {
+        fields: [
+            'name',
+            'version',
+            'description',
+            'keywords',
+            'version',
+            'private'
+        ],
+        space: 2
+    };
+
     return config;
 })({});
 

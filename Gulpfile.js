@@ -362,6 +362,16 @@ gulp.task('watch', function() {
         gulp.start('build:js');
     });
 
+    // watch package.json
+    gulp.watch([
+        'package.json'
+    ], _.merge({
+        cwd: config.paths.root
+    }, config.watch), function(event) {
+        logWatchInfo(event);
+        gulp.start('config-sync');
+    });
+
 });
 
 /* = Watch Task */
@@ -468,6 +478,21 @@ gulp.task('clean:deps', function(done) {
 
 
 /**
+ * + Config sync task
+ * =====================================================================
+ */
+
+gulp.task('config-sync', function() {
+    return gulp
+        .src(path.join(config.paths.root, 'bower.json'))
+        .pipe(g.configSync(config.configSync))
+        .pipe(gulp.dest('.'));
+});
+
+/* = Config sync task */
+
+
+/**
  * + Common tasks
  * =====================================================================
  */
@@ -476,7 +501,7 @@ gulp.task('clean:deps', function(done) {
 gulp.task('default', ['build']);
 
 // full build
-gulp.task('build', ['copy:deps', 'clean:out'], function(done) {
+gulp.task('build', ['copy:deps', 'clean:out', 'sync-config'], function(done) {
     runSequence(
         [
             'build:site',
