@@ -37,10 +37,7 @@ var autoPlug = require('auto-plug'),
     // metalsmith plugins
     ms  = autoPlug({
             prefix: 'metalsmith',
-            config: pkg,
-            rename: {
-                'metalsmith-better-excerpts': 'excerpts'
-            }
+            config: pkg
         });
 
 
@@ -266,7 +263,7 @@ gulp.task('build:site', function(done) {
         )
 
         // generate excerpts
-        .use(ms.excerpts())
+        .use(ms.betterExcerpts())
 
         // parse content
         .use(ms.branch([
