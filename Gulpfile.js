@@ -323,9 +323,14 @@ gulp.task('watch', function() {
 
     // show watch info in console
     function logWatchInfo(event) {
-        var eventPath = path.relative(config.paths.root, event.path),
-            eventMessage = 'File ' + eventPath + ' was ' + event.type + ', running tasks...';
-        console.log(eventMessage);
+        var eventPath = path.relative(config.paths.root, event.path);
+        g.util.log(
+            'File \'' +
+            g.util.colors.cyan(eventPath) +
+            '\' was ' +
+            g.util.colors.yellow(event.type) +
+            ', running tasks...'
+        );
     }
 
     // watch site and and templates
