@@ -15,6 +15,13 @@
     "dev": "./node_modules/.bin/gulp dev --environment development",
     "postinstall": "./node_modules/.bin/bower install"
   },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/simbo/a-static-site.git"
+  },
+  "bugs": {
+    "url": "https://github.com/simbo/a-static-site/issues"
+  },
   "devDependencies": {
     "auto-plug": "^0.1.1",
     "autoprefixer-core": "^4.0.2",
