@@ -25,6 +25,7 @@ sftp-config.json
 # Node, Bower
 node_modules/
 npm-debug.log
+npm-debug.log.*
 bower_components/
 v8.log
 
