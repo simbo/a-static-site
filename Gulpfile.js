@@ -506,7 +506,7 @@ gulp.task('config-sync', function() {
 gulp.task('default', ['build']);
 
 // full build
-gulp.task('build', ['copy:deps', 'clean:out', 'sync-config'], function(done) {
+gulp.task('build', ['copy:deps', 'clean:out', 'config-sync'], function(done) {
     runSequence(
         [
             'build:site',
