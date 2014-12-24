@@ -50,7 +50,7 @@ module.exports = (function(config) {
             'Opera 12.1',
             'Firefox ESR'
         ]
-    }
+    };
 
     // csswring options
     config.csswring = {
