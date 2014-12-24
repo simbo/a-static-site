@@ -23,5 +23,8 @@ A Static Site
   - `npm run build-dev`  
     build in development mode
 
+  - `npm run test`  
+    run tests
+
   - `npm run dev`  
     build in dev mode, start local webserver, watch everything and rebuild on change
