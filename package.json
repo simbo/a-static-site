@@ -10,6 +10,7 @@
   },
   "private": true,
   "scripts": {
+    "test": "./node_modules/.bin/mocha --reporter spec",
     "build": "./node_modules/.bin/gulp build --environment production",
     "build-dev": "./node_modules/.bin/gulp build --environment development",
     "dev": "./node_modules/.bin/gulp dev --environment development",
@@ -58,6 +59,7 @@
     "metalsmith-permalinks": "^0.4.0",
     "metalsmith-templates": "^0.6.0",
     "minimist": "^1.1.0",
+    "mocha": "^2.1.0",
     "moment": "^2.8.4",
     "run-sequence": "^1.0.2",
     "uglify-js": "^2.4.16"
